@@ -1,0 +1,8 @@
+RESUMEN DE PRUEBAS
+====================================================================================================
+✓ Direcciones que DEBÍAN procesarse y SÍ se procesaron:        15
+✗ Direcciones que DEBÍAN procesarse pero NO se procesaron:    0
+✓ Direcciones que NO DEBÍAN procesarse y NO lo fueron:        12
+✗ Direcciones que NO DEBÍAN procesarse pero SÍ se procesaron: 1
+
+PRECISIÓN TOTAL: 27/28 (96.4%)
