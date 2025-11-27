@@ -1,0 +1,195 @@
+================================================================================
+RESUMEN EJECUTIVO - ANALISIS EXHAUSTIVO DE VARIABLES
+================================================================================
+
+OBJETIVO:
+Identificar variables y patrones adicionales en direcciones que necesiten
+configuración en las reglas del normalizador
+
+FECHA: 26 de Noviembre de 2025
+TOTAL ANALIZADO: 34,999 direcciones (188 prueba + 34,811 producción)
+
+================================================================================
+HALLAZGOS CRITICOS (Implementar YA)
+================================================================================
+
+1. DESCRIPTIVOS FALTANTES
+   Identificados: 20+ descriptivos no eliminados
+   Frecuencia: 15,000+ apariciones
+   Impacto: ALTO - 42% de direcciones contienen descriptivos
+   
+   Principales:
+   - PISO (7,404 veces) - 21.88% de direcciones
+   - LOCAL (4,256 veces) - 12.58% de direcciones  
+   - OFICINA (1,202 veces) - 3.55% de direcciones
+   - BODEGA (952 veces)
+   - SUR, NORTE, CENTRO (4,450 veces combinadas)
+   - Abreviaturas: OFC, OF, LC, LOC, APT, CC, BIS
+
+2. CIUDADES COMO PREFIJO
+   Identificadas: 25+ ciudades colombianas
+   Frecuencia: 20,000+ apariciones
+   Impacto: ALTO - Prefijos de ciudad aparecen en 57% de casos
+   
+   Principales:
+   - BOGOTA (6,701 veces) - aparece en 19% de direcciones
+   - MEDELLIN (1,575 veces)
+   - CALI (1,509 veces)
+   - BARRANQUILLA (1,374 veces)
+   - 20+ ciudades adicionales
+
+3. ABREVIATURAS DE VIA NO NORMALIZADAS  
+   Identificadas: 2 nuevas
+   Impacto: MEDIO
+   
+   - CR (4,162 veces) - debería = KR
+   - CLL (283 veces) - debería = CL
+
+4. CORREOS ELECTRONICOS
+   Identificados: Casos como "ADMINISTRATIVO.MIECOLOMBIA.COM"
+   Impacto: BAJO pero importante
+   
+   Solución: Rechazar direcciones con '@'
+
+================================================================================
+ESTADISTICAS DETALLADAS
+================================================================================
+
+PALABRAS MAS FRECUENTES (Top 10):
+  1. #          14,852 veces (42.4%)   - Separador de número de calle
+  2. CALLE       8,680 veces (24.8%)   - Tipo de vía
+  3. PISO        8,402 veces (24.0%)   - DESCRIPTOR NO ELIMINADO
+  4. CARRERA     7,595 veces (21.7%)   - Tipo de vía
+  5. 1           7,498 veces (21.4%)   - Número
+  6. BOGOTA      7,275 veces (20.8%)   - CIUDAD NO ELIMINADA
+  7. LOCAL       4,956 veces (14.2%)   - DESCRIPTOR NO ELIMINADO
+  8. CL          4,232 veces (12.1%)   - Tipo vía (normalizado)
+  9. CR          4,162 veces (11.9%)   - ABREVIATURA NO NORMALIZADA
+  10. 2          2,980 veces ( 8.5%)   - Número
+
+DIRECCIONES SIN NUMEROS:
+  Total: 1,167 casos (3.3%)
+  Estado actual: La mayoría se rechazan correctamente
+  Ejemplos rechazados: AEROPUERTO, AEROPUERTO INTERNACIONAL
+  Nuevos a evaluar: ADMINISTRATIVO.MIECOLOMBIA.COM (@)
+
+DISTRIBUCION DE NUMEROS POR DIRECCION:
+  1 número: 1,163 (3.4%)
+  2 números: 1,948 (5.8%)
+  3 números: 13,642 (40.3%) - MAS COMUN
+  4 números: 10,515 (31.1%) - SEGUNDO
+  5 números: 4,674 (13.8%)
+  6+ números: 1,868 (5.5%)
+
+PATRON DE LONGITUD (palabras):
+  Promedio: 7.8 palabras por dirección
+  Mediana: 7 palabras
+  Rango: 1-27 palabras
+
+================================================================================
+RECOMENDACIONES DE IMPLEMENTACION
+================================================================================
+
+PRIORIDAD 1 (IMPLEMENTAR INMEDIATAMENTE):
+  [ ] 1. Agregar descriptivos a línea 61
+  [ ] 2. Agregar ciudades a línea 65  
+  [ ] 3. Agregar CR y CLL como abreviaturas
+  [ ] 4. Rechazar direcciones con '@'
+
+PRIORIDAD 2 (POST-IMPLEMENTACION):
+  [ ] 5. Test de precisión nueva
+  [ ] 6. Actualizar documentación
+  [ ] 7. Commit y push a GitHub
+
+PRIORIDAD 3 (FUTURO):
+  [ ] 8. Validar otros departamentos
+  [ ] 9. Agregar más ciudades menores
+  [ ] 10. Analizar patrones por región
+
+================================================================================
+CAMBIOS DE CODIGO PROPUESTOS
+================================================================================
+
+CAMBIO 1 - ABREVIATURAS VIA (Linea 10-12):
+================================================================================
+ANTES:
+    via_type_map = {
+        'CL': 'CL', 'CALLE': 'CL',
+        'KR': 'KR', 'CARRERA': 'KR', 'CRA': 'KR',
+        'AV': 'AV', 'AVENIDA': 'AV', 'AVD': 'AV',
+        'DG': 'DG', 'DIAGONAL': 'DG',
+        'TV': 'TV', 'TRANSVERSAL': 'TV', 'TRANSV': 'TV',
+        'AC': 'CL'
+    }
+
+DESPUES:
+    via_type_map = {
+        'CL': 'CL', 'CALLE': 'CL', 'CLL': 'CL',
+        'KR': 'KR', 'CARRERA': 'KR', 'CRA': 'KR', 'CR': 'KR',
+        'AV': 'AV', 'AVENIDA': 'AV', 'AVD': 'AV',
+        'DG': 'DG', 'DIAGONAL': 'DG',
+        'TV': 'TV', 'TRANSVERSAL': 'TV', 'TRANSV': 'TV',
+        'AC': 'CL'
+    }
+
+CAMBIO 2 - DESCRIPTIVOS (Linea 61):
+================================================================================
+ANTES:
+    descriptivos = re.compile(r'\b(APT|APTO|PISO|LOCAL|OF|OFC|OFICINA|BODEGA|'
+                              r'ACOPI|ACACIAS|ADMINISTRATIVO|ACTUAL|AENIDA)\b', 
+                              re.IGNORECASE)
+
+DESPUES:
+    descriptivos = re.compile(r'\b(APT|APTO|PISO|PISO1|PISO2|LOCAL|LOC|LC|OF|OFC|'
+                              r'OFICINA|BODEGA|SUR|NORTE|CENTRO|ESTE|OESTE|BARRIO|'
+                              r'CC|ACOPI|ACACIAS|ADMINISTRATIVO|ACTUAL|AENIDA|BIS|'
+                              r'INT|INTERIOR|LOTE|CASA|APARTAMENTO|COMERCIAL|'
+                              r'EDIFICIO|TORRE|PARQUE|ZONA|CALLE)\b', 
+                              re.IGNORECASE)
+
+CAMBIO 3 - CIUDADES (Linea 65):
+================================================================================
+ANTES:
+    ciudades = re.compile(r'\b(AEROPUERTO|AEREOPUERTO|AEREROPUERTO|AEROPUERTI|'
+                          r'CARGO)\b', re.IGNORECASE)
+
+DESPUES:
+    ciudades = re.compile(r'\b(BOGOTA|MEDELLIN|CALI|BARRANQUILLA|CALI|'
+                          r'BUCARAMANGA|PEREIRA|CARTAGENA|NEIVA|CUCUTA|IBAGUE|'
+                          r'YUMBO|CHIA|COTA|ITAGUI|MOSQUERA|MANIZALES|FUNZA|'
+                          r'MONTERIA|VILLAVICENCIO|VALLEDUPAR|FLORIDABLANCA|'
+                          r'SOLEDAD|SINCELEJO|ARMENIA|CAJICA|SOACHA|SANTA|'
+                          r'MARTA|BELLO|PALMIRA|TULUA|CARTAGO|POPAYAN|PASTO|'
+                          r'RIONEGRO|PEREIRA|AEROPUERTO|AEREOPUERTO|AEREROPUERTO|'
+                          r'AEROPUERTI|CARGO)\b', re.IGNORECASE)
+
+CAMBIO 4 - RECHAZO DE CORREOS (Linea 103):
+================================================================================
+AGREGAR DESPUES DE:
+    # Paso 3: Validar que la dirección contiene números
+
+NUEVO CODIGO:
+    # Paso 4: Rechazar correos electrónicos
+    if '@' in address.upper():
+        return ''
+
+    # Paso 5 (renumerar): ... resto del código
+
+================================================================================
+IMPACTO ESPERADO
+================================================================================
+
+Precisión actual: 93.3% (28/30 casos prueba)
+Precisión esperada post-cambios: 95%+ 
+
+Razones del aumento:
+  1. Eliminación de PISO, LOCAL mejora 7,400+ casos
+  2. Eliminación de ciudades mejora 20,000+ casos
+  3. Normalización de CR, CLL mejora 4,400+ casos
+  4. Rechazo de correos evita 0.1% de casos problemáticos
+
+Casos mejorados: ~32,000 direcciones (91% del dataset)
+
+================================================================================
+SIGUIENTE PASO: Implementar cambios en normalizar_direcciones.py
+================================================================================

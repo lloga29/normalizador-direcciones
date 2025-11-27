@@ -1,0 +1,248 @@
+================================================================================
+REPORTE DE RECOMENDACIONES - NUEVAS VARIABLES A CONFIGURAR
+26 de Noviembre de 2025
+================================================================================
+
+RESUMEN DEL ANALISIS:
+  Total direcciones analizadas: 34,999
+  Con numeros: 33,832 (96.7%)
+  Sin numeros: 1,167 (3.3%)
+
+================================================================================
+HALLAZGOS PRINCIPALES Y RECOMENDACIONES
+================================================================================
+
+[1] DESCRIPTIVOS QUE DEBEN ELIMINARSE (PRIORIDAD ALTA)
+    Frecuencia de uso después de números
+
+    CRITICO (Mayor a 1000 veces):
+      ✓ PISO      - 7,404 apariciones (21.88% después de números)
+      ✓ LOCAL     - 4,256 apariciones (12.58% después de números)
+      ✓ OFICINA   - 1,202 apariciones (3.55% después de números)
+
+    IMPORTANTE (100-1000 veces):
+      ✓ SUR       - 1,658 apariciones
+      ✓ CENTRO    - 1,313 apariciones
+      ✓ NORTE     - 479 apariciones
+      ✓ BODEGA    - 952 apariciones
+      ✓ BARRIO    - 575 apariciones
+      ✓ CASA      - 344 apariciones
+
+    ABREVIATURAS COMUNES (10-100 veces):
+      ✓ OFC       - 717 apariciones (Oficina)
+      ✓ APT       - 711 apariciones (Apartamento)
+      ✓ CC        - 472 apariciones (Centro Comercial)
+      ✓ OF        - 394 apariciones (Oficina)
+      ✓ LC        - 369 apariciones (Local)
+      ✓ LOC       - 360 apariciones (Local)
+      ✓ BIS       - 161 apariciones (Bis/Bisección)
+      ✓ INT       - 125 apariciones (Interior)
+
+    RECOMENDACION:
+    Actualizar la línea 61 del normalizar_direcciones.py:
+    
+    Agregar a descriptivos:
+    - PISO, PISO1, PISO2 (muy frecuente)
+    - LOCAL, LOC, LC
+    - OFC, OF, OFICINA
+    - BODEGA
+    - SUR, NORTE, CENTRO, ESTE, OESTE (direcciones relativas)
+    - BARRIO
+    - CC (Centro Comercial)
+    - BIS
+    - INT (Interior)
+
+    CAMBIO PROPUESTO:
+    descriptivos = re.compile(r'\b(APT|APTO|PISO|PISO1|PISO2|LOCAL|LOC|LC|OF|OFC|OFICINA|'
+                              r'BODEGA|SUR|NORTE|CENTRO|ESTE|OESTE|BARRIO|CC|ACOPI|'
+                              r'ACACIAS|ADMINISTRATIVO|ACTUAL|AENIDA|BIS|INT|INTERIOR|'
+                              r'LOTE|INTERIOR|CASA|APARTAMENTO)\b', re.IGNORECASE)
+
+================================================================================
+
+[2] CIUDADES / PREFIJOS A ELIMINAR (PRIORIDAD MEDIA)
+    Ciudades que aparecen al inicio de direcciones
+
+    MUY FRECUENTE (Mayor a 1000 veces):
+      ✓ BOGOTA          - 5,417 + 1,284 = 6,701 apariciones
+      ✓ MEDELLIN        - 1,315 + 260 = 1,575 apariciones
+      ✓ BARRANQUILLA    - 1,229 + 145 = 1,374 apariciones
+      ✓ CALI            - 1,110 + 399 = 1,509 apariciones
+
+    MODERADO (100-1000 veces):
+      ✓ BUCARAMANGA     - 500 apariciones
+      ✓ PEREIRA         - 431 apariciones
+      ✓ CARTAGENA       - 424 apariciones
+      ✓ NEIVA           - 377 + 260 = 637 apariciones
+      ✓ CUCUTA          - 340 apariciones
+      ✓ IBAGUE          - 241 apariciones
+      ✓ YUMBO           - 210 apariciones
+      ✓ CHIA            - 224 + 478 = 702 apariciones
+      ✓ COTA            - 245 + 437 = 682 apariciones
+      ✓ ITAGUI          - 196 apariciones
+      ✓ MOSQUERA        - 191 apariciones
+      ✓ MANIZALES       - 182 apariciones
+      ✓ FUNZA           - 174 + 361 = 535 apariciones
+      ✓ MONTERIA        - 174 apariciones
+      ✓ VILLAVICENCIO   - 176 apariciones
+      ✓ VALLEDUPAR      - 180 apariciones
+      ✓ FLORIDABLANCA   - 166 apariciones
+      ✓ SOLEDAD         - 164 apariciones
+      ✓ SINCELEJO       - 153 apariciones
+      ✓ ARMENIA         - 207 apariciones
+      ✓ CAJICA          - 216 apariciones
+      ✓ SOACHA          - 202 apariciones
+      ✓ SANTA MARTA     - 202 apariciones
+      ✓ BELLO           - 173 apariciones
+
+    RECOMENDACION:
+    Actualizar línea 65 del normalizar_direcciones.py para incluir
+    todas estas ciudades colombianas en la lista de rechazo.
+
+    CAMBIO PROPUESTO (expandir ciudades regex):
+    ciudades = re.compile(r'\b(BOGOTA|MEDELLIN|CALI|BARRANQUILLA|BUCARAMANGA|'
+                          r'PEREIRA|CARTAGENA|NEIVA|CUCUTA|IBAGUE|YUMBO|CHIA|'
+                          r'COTA|ITAGUI|MOSQUERA|MANIZALES|FUNZA|MONTERIA|'
+                          r'VILLAVICENCIO|VALLEDUPAR|FLORIDABLANCA|SOLEDAD|'
+                          r'SINCELEJO|ARMENIA|CAJICA|SOACHA|SANTA|MARTA|BELLO|'
+                          r'PALMIRA|TULUA|CARTAGO|POPAYAN|PASTO|SAN ANDRES|'
+                          r'AEROPUERTO|AEREOPUERTO|AEREROPUERTO|AEROPUERTI|'
+                          r'CARGO|ADMINISTRATIVO)\b', re.IGNORECASE)
+
+================================================================================
+
+[3] CARACTERES ESPECIALES A MANEJAR (PRIORIDAD MEDIA)
+    Análisis de símbolos encontrados
+
+    MUY FRECUENTE:
+      '#' - 16,610 veces (47.4%)    <- Símbolo de número de dirección
+      '.' - 5,973 veces             <- Puntos/decimales
+      '@' - 41 veces                <- Correos electrónicos
+
+    RECOMENDACION:
+    El símbolo '#' está siendo usado adecuadamente en normalizaciones.
+    El símbolo '.' es frecuente pero manejado.
+    El símbolo '@' indica posibles direcciones de correo que deben rechazarse.
+
+    CAMBIO PROPUESTO:
+    Agregar validación para rechazar direcciones que contengan '@'
+    (son típicamente correos electrónicos, no direcciones físicas)
+
+================================================================================
+
+[4] PALABRAS MIXTAS (LETRAS + NUMEROS) - VALIDAR (PRIORIDAD MEDIA)
+    Patrones que combinan letras y números
+
+    CASOS COMUNES:
+      PISO1, PISO2      - 738 veces (descriptor + número)
+      43A, 15A, 1A      - 6,500+ veces (número + letra de suite/local)
+      51B, 12B, 6B      - 500+ veces (número + letra)
+      58D               - 91 veces (número + letra)
+      6N                - 74 veces (número + N = Norte)
+
+    RECOMENDACION:
+    Estos patrones NO deben ser rechazados. Son válidos en direcciones.
+    El script actual los mantiene, lo cual es correcto.
+
+    Ejemplo válido: "CL 43A 15 10" -> "CL 43 15 10" (eliminar letra A)
+    O mantener: "CL 43A 15 10" -> "CL 43 15 10" (solo números)
+
+================================================================================
+
+[5] PATRONES DE NÚMEROS (INFORMACIÓN ESTRUCTURAL)
+    Distribución de cantidad de números por dirección
+
+    1 número:   1,163 veces (3.44%)    <- Potencial: solo calle
+    2 números:  1,948 veces (5.76%)    <- Potencial: calle + número
+    3 números: 13,642 veces (40.32%)   <- MAS COMUN: tipo vía + 2 números
+    4 números: 10,515 veces (31.08%)   <- COMUN: tipo vía + 3 números
+    5 números:  4,674 veces (13.82%)   <- Típico: dirección completa
+    6+ números:  1,868 veces (5.52%)   <- Excepciones
+
+    OBSERVACION:
+    El script actual maneja correctamente estos patrones.
+    La mayoría de direcciones tienen 3-4 números, que es lo esperado.
+
+    RECOMENDACION:
+    El algoritmo actual es adecuado. No requiere cambios.
+
+================================================================================
+
+[6] ABREVIATURAS DE VÍA NO RECONOCIDAS (PRIORIDAD MEDIA)
+    Tipos de vía encontrados en datos
+
+    CONOCIDAS Y MANEJADAS:
+      CL, CALLE     - 12,000+ veces ✓
+      KR, CARRERA   - 11,000+ veces ✓
+      AV, AVENIDA   - 2,700+ veces ✓
+      CRA           - 2,400+ veces ✓
+      DG, DIAGONAL  - 153+ veces ✓
+      TV, TRANSVERSAL - confirmado ✓
+      VIA           - 1,633 veces ✓
+
+    NO RECONOCIDAS (potenciales):
+      CR            - 4,162 veces (probablemente = KR/CARRERA, pero sin normalizar)
+      CLL           - 283 veces (probablemente = CALLE)
+
+    RECOMENDACION:
+    Agregar CR como abreviatura adicional para CARRERA
+    Agregar CLL como abreviatura adicional para CALLE
+
+    CAMBIO PROPUESTO (línea 10-12):
+    via_type_map = {
+        'CL': 'CL', 'CALLE': 'CL', 'CLL': 'CL',  # Agregar CLL
+        'KR': 'KR', 'CARRERA': 'KR', 'CRA': 'KR', 'CR': 'KR',  # Agregar CR
+        'AV': 'AV', 'AVENIDA': 'AV', 'AVD': 'AV',
+        'DG': 'DG', 'DIAGONAL': 'DG',
+        'TV': 'TV', 'TRANSVERSAL': 'TV', 'TRANSV': 'TV',
+        'AC': 'CL'
+    }
+
+================================================================================
+
+[7] DIRECCIONES SIN NÚMEROS (3.3% - 1,167 casos)
+    Análisis de qué se rechaza
+
+    ENCONTRADO:
+      - ADMINISTRATIVO.MIECOLOMBIA.COM    (correo electrónico)
+      - AEREOPUERTO INTERNACIONAL...      (ubicación sin número) - ya rechaza ✓
+      - Varias variantes de AEROPUERTO    (ya rechaza) ✓
+
+    RECOMENDACION:
+    Agregar validación para rechazar direcciones con '@' (correos)
+    El rechazo actual de AEROPUERTO es correcto y está funcionando.
+
+================================================================================
+
+RESUMEN DE CAMBIOS RECOMENDADOS
+================================================================================
+
+ARCHIVO: normalizar_direcciones.py
+
+CAMBIO 1 (LÍNEA 10-12): Agregar abreviaturas de vía
+  Agregar: CR como alias de KR, CLL como alias de CL
+
+CAMBIO 2 (LÍNEA 61): Expandir descriptivos
+  Agregar: PISO, PISO1, PISO2, LOCAL, LOC, LC, OFC, OF, OFICINA,
+           BODEGA, SUR, NORTE, CENTRO, ESTE, OESTE, BARRIO, CC, BIS, INT
+
+CAMBIO 3 (LÍNEA 65): Expandir ciudades
+  Agregar todas las ciudades colombianas identificadas
+
+CAMBIO 4 (NEW): Validación de correos
+  Rechazar direcciones que contengan '@' (correos electrónicos)
+
+CAMBIO 5 (LÍNEA 103): Agregar validación
+  if '@' in address.upper():
+      return ''
+
+================================================================================
+
+IMPACTO ESPERADO:
+  - Mejor limpieza de descriptivos locales
+  - Mejor eliminación de ciudades al inicio
+  - Rechazo de correos electrónicos
+  - Mejor manejo de abreviaturas comunes
+  - Mejora en precisión general (esperar pasar de 93.3% a 95%+)
+
+================================================================================
