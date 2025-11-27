@@ -8,10 +8,10 @@ def normalize_via_type(s: str) -> str:
     """
     s_upper = s.upper()
     
-    # Mapeo de tipos de vía
-    if s_upper in ['CALLE', 'CLL', 'CL', 'CALL', 'AC','ACL']:
+    # Mapeo de tipos de vía - ACTUALIZADO: ACL->CL, ACR->KR
+    if s_upper in ['CALLE', 'CLL', 'CL', 'CALL', 'AC', 'ACL']:
         return 'CL'
-    elif s_upper in ['CARRERA', 'CRA', 'KRA', 'KR', 'CARR', 'AK', 'K']:
+    elif s_upper in ['CARRERA', 'CRA', 'KRA', 'KR', 'CARR', 'AK', 'K', 'ACR']:
         return 'KR'
     elif s_upper in ['AVENIDA', 'AV', 'AVD', 'AVDA', 'AVE']:
         return 'AV'
@@ -31,6 +31,7 @@ def standardize_address(address: str) -> str:
     2. Busca patrón TIPO_VIA + NUMEROS
     3. Si no encuentra tipo de vía, toma los primeros números como si fuera una calle
     4. Rechaza valores que parecen ser coordenadas GPS
+    5. ESPECIAL: Normaliza KM VÍA manteniendo estructura base, eliminando complementos
     """
     if pd.isna(address):
         return ''
@@ -48,6 +49,28 @@ def standardize_address(address: str) -> str:
     if decimal_count >= 2:  # Probablemente son coordenadas GPS
         return ''
     
+    # ===== MANEJO ESPECIAL PARA KM VÍA =====
+    # Detectar si es una dirección de KM VÍA (formato: ... KM <numero> VIA/VEREDA ... CIUDAD ...)
+    km_pattern = re.compile(r'^(.*?)(?:KM|K\.M\.?|KILOMETRO)\s+(\d+[.\d]*)\s+(.+?)(?=\s+(?:BOGOTA|MEDELLIN|CALI|BARRANQUILLA|LOCAL|PISO|APT|OFICINA|BODEGA|ZONA|SOTANO|$))', re.IGNORECASE)
+    km_match = km_pattern.search(s)
+    
+    if km_match:
+        # Es una dirección de KM VÍA
+        km_num = km_match.group(2)
+        resto_despues_km = km_match.group(3).strip()
+        
+        # Buscar el tipo de vía después del KM
+        via_pattern = re.compile(r'\b(CALLE|CLL|CL|CALL|CARRERA|CRA|KRA|KR|AK|K|AVENIDA|AV|AVD|AVDA|AVE|DIAGONAL|DG|DIAG|TRANSVERSAL|TV|TRANSV|TR|AC|ACL|ACR|PASAJE|PAS|PASEO|VEREDA|VDA|VIA)\s+(.+)', re.IGNORECASE)
+        via_match = via_pattern.search(resto_despues_km)
+        
+        if via_match:
+            via_type = normalize_via_type(via_match.group(1))
+            via_numero = via_match.group(2).strip().split()[0]  # Tomar solo el primer elemento
+            return f"KM {km_num} {via_type} {via_numero}"
+        else:
+            # Solo KM + número, sin tipo de vía claro
+            return f"KM {km_num}"
+    
     # Reemplazar símbolos comunes por espacios
     s = re.sub(r'[#\-,;.()]+', ' ', s)
     
@@ -57,8 +80,8 @@ def standardize_address(address: str) -> str:
     # Reemplazar variaciones de "No." o "Nº"
     s = re.sub(r'\b(N[OÓº°]|NO|NR|NUM)\b', ' ', s, flags=re.IGNORECASE)
     
-    # Eliminar palabras descriptivas (PERO NO VIA)
-    descriptivos = r'\b(LOCAL|LOCALES|L\d+|CENTRO|COMERCIAL|COMERCIAR|PISO|APTO|APT|APARTAMENTO|OFICINA|OF|INTERIOR|INT|BODEGA|CASA|EDIFICIO|ED|ATRIO|TORRE|TO|BLOQUE|BL|BLQ|MZ|MANZANA|BARRIO|CONJUNTO|CONJ|ETAPA|PARQUE|TERMINAL|PUENTE|AEREO|SUR|NORTE|ESTE|OESTE|COSTADO|FRENTE|ESQUINA|ESQ|LAS|LOS|LA|LD|LOTE|LOTES|FASE|MODULO|MOD|SUBLOTE|SECTOR|SECT|KM|KILOMETRO|KILOMETROS|DEL|DE|EN|BODEGAS|ARTURO|CUMPLIDO|TOLU|PARCELAS|COTA|ES|DIRECCION|A|MTS|ADELANTE|PEAJE|PUERTAS|DON|DIEGO|LLANOGRANDE|ACOPI|ACACIAS|RANSA|COLFRIGOS|SUBA|CALI|MIECO|ERNESTO|CORTIZZOS|CAMILA|DAZA|ADMINISTRATIVO|ACTUAL|AENIDA)\b'
+    # Eliminar palabras descriptivas - ACTUALIZADO CON NUEVAS VARIACIONES
+    descriptivos = r'\b(LOCAL|LOCALES|L\d+|CENTRO|COMERCIAL|COMERCIAR|PISO|APTO|APT|APARTAMENTO|OFICINA|OF|OFC|OFI|INTERIOR|INT|BODEGA|BOD|BODEGAS|CASA|EDIFICIO|ED|ATRIO|TORRE|TO|BLOQUE|BL|BLQ|MZ|MANZANA|BARRIO|CONJUNTO|CONJ|ETAPA|PARQUE|TERMINAL|PUENTE|AEREO|SUR|NORTE|ESTE|OESTE|COSTADO|FRENTE|ESQUINA|ESQ|LAS|LOS|LA|LD|LOTE|LOTES|FASE|MODULO|MOD|SUBLOTE|SECTOR|SECT|KM|KILOMETRO|KILOMETROS|DEL|DE|EN|BODEGAS|ARTURO|CUMPLIDO|TOLU|PARCELAS|COTA|ES|DIRECCION|A|MTS|ADELANTE|PEAJE|PUERTAS|DON|DIEGO|LLANOGRANDE|ACOPI|ACACIAS|RANSA|COLFRIGOS|SUBA|CALI|MIECO|ERNESTO|CORTIZZOS|CAMILA|DAZA|ADMINISTRATIVO|ACTUAL|AENIDA|NRO|TRADE|PARK|SIBERIA|VIAL|BRICENO|PALERMO|ANILLO|VEREDA|VDA|GIRON|VIA|AUTOPISTA|LC|LOC|DG|BA|CD|PI|PZ|BIS|BD|AL|TRV|BOG|PS|LT|LO|IN|AP|CON|AN|BDG|PAGINA|LINCA|NIVEL)\b'
     s = re.sub(descriptivos, ' ', s, flags=re.IGNORECASE)
     
     # Eliminar ciudades/lugares

@@ -1,0 +1,185 @@
+====================================================================================================
+ANALISIS ESPECIFICO: ACL, ACR, VARIACIONES SIMILARES Y KM VÍA
+====================================================================================================
+
+RESUMEN EJECUTIVO:
+  Casos de ACL encontrados: 3
+  Casos de ACR encontrados: 0
+  Casos de AC como tipo via: 49
+  Casos con KM/KM VÍA: 1974
+  Casos con VÍA + número: 128
+
+CASOS DE ACL:
+----------------------------------------------------------------------------------------------------
+  1. BOGOTA  ACL 45 # 99A 95  SUBA
+  2. BOGOTA  ACL 45 # 99A 95  SUBA
+  3. BOGOTA    U SAQUEN ACL 163A   CARRERA 8C CENEFA 102A01   74 027813   4 739564
+
+CASOS DE AC (como tipo de vía):
+----------------------------------------------------------------------------------------------------
+  1. BOGOTA    AC 24 # 80B 61
+  2. BOGOTA  AC 24 # 95   12 BG 11
+  3. BOGOTA    AC 26 # 103 09 LOCAL
+  4. AC 26 # 60 47 LOCAL 2 CENTRO C
+  5. AC 26 # 62   49
+  6. BOGOTA   AC 26 # 62   49 LC 34
+  7. AC 26# 68C   61 OF 501
+  8. BOGOTA  AC 26 69D 91 TO 2 OFC
+  9. BOGOTA    AC 26 N  69 76 TORRE
+  10. AC 26 SUR NO.52 A 11
+  11. AC 45ASUR 59A 50
+  12. BOGOTA    AC 63 # 97 10
+  13. AC 68 # 26   04   BOGOTA
+  14. AC 72 69 K 06
+  15. AC 72 NO.78 91   BOGOTA
+  16. AC 72 # 97   21
+  17. AC 72 N  83   96  BOGOTA
+  18. AC 80 # 100   52
+  19. AC 100 NO. 13 76 OF ADMON
+  20. BOGOTA    AC 116 # 17A 00
+  21. AC 127 NO. 15 36 LOC 4
+  22. AC 134 # 19   50   BOGOTA
+  23. AC 15# 124 30 PARA EL  LOCAL 1 117 DEL PRIMER PISO
+  24. AC 17 # 126   61
+  25. AC 17 132 18 INT 25I3 BOGOTA
+  26. AC 17 90 85 PISO 1
+  27. AC 19 CR 28  80   LOCAL C 2417
+  28. AC 24 75 95    BOGOTA
+  29. BOGOTA    AC 24 # 80B 61
+  30. BOGOTA  AC 24 # 95   12 BG 11
+
+VARIACIONES SIMILARES (abreviaturas 2-3 letras):
+----------------------------------------------------------------------------------------------------
+  CL   -  3377 veces [YA EXISTE]
+  CR   -  3252 veces [YA EXISTE]
+  NO   -  1464 veces
+  CRA  -  1278 veces [YA EXISTE]
+  KM   -  1106 veces [YA EXISTE]
+  OFC  -   697 veces
+  SUR  -   681 veces
+  KR   -   632 veces [YA EXISTE]
+  OF   -   346 veces
+  CLL  -   346 veces
+  LC   -   332 veces
+  LOC  -   291 veces
+  AV   -   271 veces [YA EXISTE]
+  BA   -   189 veces
+  APT  -   134 veces
+  VIA  -   133 veces
+  DG   -   129 veces
+  INT  -   113 veces
+  AK   -   101 veces
+  KRA  -   100 veces
+  TV   -    81 veces
+  BOD  -    77 veces
+  TR   -    62 veces
+  CO   -    53 veces
+  PI   -    52 veces
+  OFI  -    49 veces
+  MZ   -    48 veces
+  AC   -    47 veces [POTENCIAL SIMILAR]
+  BG   -    46 veces
+  BIS  -    42 veces
+  LA   -    32 veces
+  NRO  -    31 veces
+  BD   -    27 veces
+  AL   -    22 veces [POTENCIAL SIMILAR]
+  BDG  -    22 veces
+  CON  -    17 veces
+  AN   -    16 veces
+  TRV  -    16 veces
+  BOG  -    13 veces
+  DE   -    12 veces
+  PS   -    11 veces
+  LT   -    11 veces
+  LO   -    10 veces
+  IN   -    10 veces
+  AP   -    10 veces [POTENCIAL SIMILAR]
+
+ANALISIS KM VÍA:
+----------------------------------------------------------------------------------------------------
+Total casos con KM: 1974
+Total casos con VÍA + número: 128
+
+Ejemplos de direcciones KM:
+  1. AEROPUERTO DE BARRANQUILLA CALLE 30 KM 7 SOLEDAD
+  2. AEROPUERTO PALO NEGRO LEBRIJA KILOMETRO 25 VIA A LEBRIJA LOCAL 1  080A   EL CLIENTE YA TIENE SERVICI
+  3. AJICA  POTOSI CHIA CAJICA KILOMETRO 2 ENTRADA RTE COSIACA
+  4. ALBORNOZ VIA A MAMONAL KM 3 AS
+  5. 1.5  KILOMETRO  VIA PARCELAS DE COTA
+  6. BARRANQUILLA    2.5 KILOMETRO VIA CORDIALIDAD. CALLE 2 MANZANA 11 BG 38 A ZONA FRANCA ZOFIA   GALAP
+  7. BARRANQUILLA    2.5 KILOMETRO VIA CORDIALIDAD MANZANA 13 BODEGA 92 OFICINA 3 PISO 1 ZONA FRANCA ZOFI
+  8. CALI    3 30 25.88 N 76 31 27.74 O PISO 1 KILOMETRO 4 VIA ANTIGUA      2
+  9. RIONEGRO    3 PUERTAS  DON DIEGO LLANOGRANDE #KM 8   CENTRO COMERCIAL JARDINES LLANOGRANDE SOTANO 1
+  10. 4 53 02.7 N 74 02 06.5 W   CENTRO COMERCIAL FONTANAR CHIA   VIA CHIA KILOMETRO 2.5 CAJICA LOCAL 2 31
+  11. 4.749875   74.145174   TERMINAL TERRESTRE DE CARGA DE BOGOTA DIR. AUTOPISTA MEDELLIN KM 3.5 COSTADO
+  12. 4.7578069  74.1525206 14Z    VIA SIBERIA COTA  KM 1 ACCESO TITAN  PISO1
+  13. FUNZA    4.761795   74.183955 KILOMETRO 7 FUNZA   SIBERIA PARQUE CELTA TRADE PARK. BODEGA 122
+  14. 4.827538   75.707099 KILOMETRO 7 VARIANTE LA ROMELIA   EL POLLO BODEGAS AMARILLAS BG
+  15. TOCANCIPA   4 9410009 73.9527941 KILOMETRO 34 VEREDA CANAVITA BODEGA POTENZA
+  16. MANIZALES    5 02 10.4 N 75 27 18.4 W 5.036227  75.455103 PISO1 KM 11 VIA MAGDALENA
+  17. RIONEGRO    6.183479   75.362405 PISO 1 BODEGA 2A KILOMETRO 37 AUTOPISTA  MEDELLIN  BOGOTA   PARQUE
+  18. 7.142145023895708   73.15451708594414  KM 4 VIA PA
+  19. A   AUTOPISTA MEDELLIN KM 2.5
+  20. A   MAMONAL KM 1 C INDUSTRIAL
+
+Estructura de direcciones KM encontradas:
+  'KM 1 ACCESO TITAN' - 1 veces
+  'KM 4 VIA GIRON' - 1 veces
+  'KM 2 5 VIA PARCELAS AEPI' - 1 veces
+  'KM 7' - 1 veces
+  'KM 7 CELTA' - 1 veces
+  'KM 4' - 1 veces
+
+Palabras frecuentes después de KM (complementos a eliminar):
+  VIA                  -   111 veces
+  AUTOPISTA            -    18 veces
+  SIBERIA              -    16 veces
+  PARQUE               -    11 veces
+  CHIA                 -     7 veces
+  CAJICA               -     7 veces
+  CELTA                -     6 veces
+  COSTADO              -     6 veces
+  BODEGA               -     6 veces
+  COTA                 -     6 veces
+  FUNZA                -     6 veces
+  ANILLO               -     6 veces
+  VIAL                 -     6 veces
+  BRICENO              -     5 veces
+  AEROPUERTO           -     5 veces
+  400                  -     5 veces
+  PALERMO              -     5 veces
+  SUR                  -     4 veces
+  TRADE                -     4 veces
+  PARK                 -     4 veces
+
+====================================================================================================
+RECOMENDACIONES FINALES:
+====================================================================================================
+
+1. AGREGAR ACL -> CL
+   Encontrado: 3 casos
+   Prioridad: MEDIA
+
+3. VERIFICAR AC -> CL
+   Encontrado: 49 casos
+   Estado: Verificar si normalizacion es correcta
+
+4. REVISAR VARIACIONES SIMILARES
+   Encontradas: 17
+   NO (1464)
+   OFC (697)
+   SUR (681)
+   OF (346)
+   CLL (346)
+
+5. NORMALIZAR KM VÍA (ESPECIAL)
+   Encontrado: 1974 casos
+   Accion: Mantener estructura base (KM + número + tipo vía)
+
+         Eliminar complementos: CIUDAD, LOCAL, PISO, APT, OFICINA, etc.
+
+   Ejemplo: 'KM 5 VIA A BOGOTA LOCAL 2' -> 'KM 5 VIA A'
+
+   Prioridad: IMPORTANTE
+
