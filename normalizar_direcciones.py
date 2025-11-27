@@ -9,7 +9,7 @@ def normalize_via_type(s: str) -> str:
     s_upper = s.upper()
     
     # Mapeo de tipos de vía
-    if s_upper in ['CALLE', 'CLL', 'CL', 'CALL', 'AC']:
+    if s_upper in ['CALLE', 'CLL', 'CL', 'CALL', 'AC','ACL']:
         return 'CL'
     elif s_upper in ['CARRERA', 'CRA', 'KRA', 'KR', 'CARR', 'AK', 'K']:
         return 'KR'
