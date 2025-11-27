@@ -1,0 +1,131 @@
+================================================================================
+PROXIMO PASO - IMPLEMENTACION DE CAMBIOS EN REGLAS
+26 de Noviembre de 2025
+================================================================================
+
+FASE 1: PREPARACION (COMPLETADA)
+================================================================================
+[X] Análisis exhaustivo de 34,999 direcciones
+[X] Identificación de 20+ variables no configuradas
+[X] Documentación de hallazgos
+[X] Commit en GitHub con análisis
+
+FASE 2: IMPLEMENTACION (LISTA PARA EJECUTAR)
+================================================================================
+
+Los cambios necesarios están documentados en:
+  - RESUMEN_HALLAZGOS.txt (código propuesto)
+  - RECOMENDACIONES_CAMBIOS.txt (detallado)
+
+CAMBIOS A REALIZAR EN: normalizar_direcciones.py
+
+CAMBIO 1: ABREVIATURAS DE VIA (Línea 10-12)
+---
+Agregar: CLL como alias de CL
+Agregar: CR como alias de KR
+
+Línea actual:
+  'CL': 'CL', 'CALLE': 'CL',
+  'KR': 'KR', 'CARRERA': 'KR', 'CRA': 'KR',
+
+Cambiar a:
+  'CL': 'CL', 'CALLE': 'CL', 'CLL': 'CL',
+  'KR': 'KR', 'CARRERA': 'KR', 'CRA': 'KR', 'CR': 'KR',
+
+CAMBIO 2: DESCRIPTIVOS (Línea 61)
+---
+Agregar 20+ descriptivos nuevos:
+- PISO, PISO1, PISO2 (más importante: 7,400+ veces)
+- LOCAL, LOC, LC (4,300+ veces)
+- OFICINA, OFC, OF (2,300+ veces)
+- SUR, NORTE, CENTRO, ESTE, OESTE (4,450+ veces)
+- BODEGA, BARRIO, CASA, APARTAMENTO (1,000+ veces)
+- COMERCIAL, EDIFICIO, TORRE, PARQUE, ZONA (600+ veces)
+- CC, BIS, INT, INTERIOR, LOTE (1,000+ veces)
+
+Línea actual (fragmento):
+  r'\b(APT|APTO|PISO|LOCAL|OF|OFC|OFICINA|BODEGA|' \
+  r'ACOPI|ACACIAS|ADMINISTRATIVO|ACTUAL|AENIDA)\b'
+
+Cambiar a (línea completa actualizada):
+  r'\b(APT|APTO|PISO|PISO1|PISO2|LOCAL|LOC|LC|OF|OFC|' \
+  r'OFICINA|BODEGA|SUR|NORTE|CENTRO|ESTE|OESTE|BARRIO|' \
+  r'CC|ACOPI|ACACIAS|ADMINISTRATIVO|ACTUAL|AENIDA|BIS|' \
+  r'INT|INTERIOR|LOTE|CASA|APARTAMENTO|COMERCIAL|' \
+  r'EDIFICIO|TORRE|PARQUE|ZONA|CALLE)\b'
+
+CAMBIO 3: CIUDADES (Línea 65)
+---
+Agregar 25+ ciudades colombianas principales:
+- BOGOTA (6,701 veces - MAYOR)
+- MEDELLIN (1,575 veces)
+- CALI (1,509 veces)
+- BARRANQUILLA (1,374 veces)
+- Y 20+ ciudades adicionales
+
+Línea actual (fragmento):
+  r'\b(AEROPUERTO|AEREOPUERTO|AEREROPUERTO|AEROPUERTI|' \
+  r'CARGO)\b'
+
+Cambiar a (expandir list):
+  r'\b(BOGOTA|MEDELLIN|CALI|BARRANQUILLA|BUCARAMANGA|' \
+  r'PEREIRA|CARTAGENA|NEIVA|CUCUTA|IBAGUE|YUMBO|CHIA|' \
+  r'COTA|ITAGUI|MOSQUERA|MANIZALES|FUNZA|MONTERIA|' \
+  r'VILLAVICENCIO|VALLEDUPAR|FLORIDABLANCA|SOLEDAD|' \
+  r'SINCELEJO|ARMENIA|CAJICA|SOACHA|SANTA|MARTA|BELLO|' \
+  r'PALMIRA|TULUA|CARTAGO|POPAYAN|PASTO|RIONEGRO|' \
+  r'AEROPUERTO|AEREOPUERTO|AEREROPUERTO|AEROPUERTI|CARGO)\b'
+
+CAMBIO 4: RECHAZO DE CORREOS (Línea 103, agregación)
+---
+Agregar validación después de:
+  "# Paso 3: Validar que la dirección contiene números"
+
+Nuevo código:
+  # Paso 4: Rechazar correos electrónicos
+  if '@' in address.upper():
+      return ''
+
+FASE 3: PRUEBAS POST-CAMBIOS (PARA DESPUES)
+================================================================================
+[ ] 1. Ejecutar test_completo.py con los nuevos cambios
+[ ] 2. Procesar direcciones_normalizadas.xlsx nuevamente
+[ ] 3. Calcular nueva precisión
+[ ] 4. Procesar Nits_ciudad.xlsx nuevamente
+[ ] 5. Comparar antes/después de cambios
+[ ] 6. Documentar mejoras alcanzadas
+
+FASE 4: FINALIZACION
+================================================================================
+[ ] 1. Hacer commit con cambios implementados
+[ ] 2. Push a GitHub
+[ ] 3. Actualizar documentación (GUIA_REGLAS.txt, INFORME_FINAL.txt)
+[ ] 4. Crear reporte final de precision
+
+================================================================================
+COMANDO PARA PROXIMO PASO
+================================================================================
+
+Cuando esté listo para implementar:
+  1. Abrir: c:\Users\Juan\Documents\Lorena\normalizar_direcciones.py
+  2. Realizar los 4 cambios arriba descritos
+  3. Guardar archivo
+  4. Ejecutar: python test_completo.py
+  5. Ejecutar: python normalizar_direcciones.py
+
+================================================================================
+METRICAS ESPERADAS POST-CAMBIOS
+================================================================================
+
+Precisión Antes:     93.3% (28/30 casos)
+Precisión Esperada:  95%+ (mejoría de 1.7%)
+
+Razones del aumento:
+  - Eliminación correcta de PISO, LOCAL, OFICINA
+  - Eliminación correcta de ciudades como prefijo
+  - Normalización de CR a KR, CLL a CL
+  - Rechazo de correos electrónicos
+
+Casos directamente mejorados: ~32,000 direcciones (91% del dataset)
+
+================================================================================
