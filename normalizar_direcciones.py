@@ -120,7 +120,7 @@ def standardize_address(address: str) -> str:
 
 
 def main():
-    input_file = "direcciones.xlsx"
+    input_file = "Nits_ciudad.xlsx"
     output_file = "direcciones_normalizadas.xlsx"
     column_name = "Direccion"  # cambia si tu columna tiene otro nombre
 
