@@ -8,16 +8,16 @@ def normalize_via_type(s: str) -> str:
     """
     s_upper = s.upper()
     
-    # Mapeo de tipos de vía - ACTUALIZADO: ACL->CL, ACR->KR
+    # Mapeo de tipos de vía - ACTUALIZADO: ACL->CL, ACR->KR, AENIDA->AV
     if s_upper in ['CALLE', 'CLL', 'CL', 'CALL', 'AC', 'ACL']:
         return 'CL'
     elif s_upper in ['CARRERA', 'CRA', 'KRA', 'KR', 'CARR', 'AK', 'K', 'ACR']:
         return 'KR'
-    elif s_upper in ['AVENIDA', 'AV', 'AVD', 'AVDA', 'AVE']:
+    elif s_upper in ['AVENIDA', 'AENIDA', 'AV', 'AVD', 'AVDA', 'AVE']:
         return 'AV'
     elif s_upper in ['DIAGONAL', 'DG', 'DIAG']:
         return 'DG'
-    elif s_upper in ['TRANSVERSAL', 'TV', 'TRANSV', 'TR']:
+    elif s_upper in ['TRANSVERSAL', 'TV', 'TRANSV', 'TR', 'TRAVERSAL', 'TRANVERSAL', 'TRANSVERSA', 'TRANSVERAL', 'TRANSVESAL']:
         return 'TV'
     else:
         return s_upper
@@ -45,21 +45,62 @@ def standardize_address(address: str) -> str:
     s = s.upper()
     
     # RECHAZO RÁPIDO: Si tiene muchas coordenadas GPS (patrones como "10.123456  74.654321")
-    # Cuenta cuántos números decimales hay
-    decimal_count = len(re.findall(r'\d+\.\d+', s))
-    if decimal_count >= 2:  # Probablemente son coordenadas GPS
+    # Pero primero intentar eliminarlas y procesar el resto si hay dirección válida
+    # Eliminar números decimales largos que parecen coordenadas GPS (5+ decimales)
+    s = re.sub(r'\b\d+\.\d{5,}\b', ' ', s)
+    
+    # También eliminar patrones de coordenadas con N/S/E/O/W
+    s = re.sub(r'\b\d+\.\d+\s*[NSEOW]\b', ' ', s, flags=re.IGNORECASE)
+    
+    # Compactar espacios después de eliminar coordenadas
+    s = re.sub(r'\s+', ' ', s).strip()
+    
+    # Si después de limpiar coordenadas no queda nada útil, rechazar
+    if not s or len(s) < 3:
         return ''
+    
+    # ===== MANEJO ESPECIAL PARA AEROPUERTO =====
+    # Normalizar errores de escritura de AEROPUERTO
+    s = re.sub(r'\b(AEREOPUERTO|AEREROPUERTO|AEROPUERTI|CARGO)\b', 'AEROPUERTO', s, flags=re.IGNORECASE)
+    
+    # Si la dirección contiene AEROPUERTO, tratarla especialmente
+    if 'AEROPUERTO' in s:
+        # Eliminar ciudades al inicio
+        s_aeropuerto = re.sub(r'^(ACACIAS|AGUACHICA|AGUAZUL|ANAPOIMA|ANSERMA|APARTADO|ARMENIA|BARANOA|BARBOSA|BARRANCABERMEJA|BARRANQUILLA|BELEN DE UMBRIA|BELLO|BOGOTA|BOLIVAR|BRICENO|BUCARAMANGA|BUENAVENTURA|BUGA|CAJICA|CALARCA|CALDAS|CALI|CAMPOALEGRE|CARTAGENA|CARTAGO|CAUCASIA|CERETE|CHAPARRAL|CHIA|CHINCHINA|CHIQUINQUIRA|CIENAGA|CODAZZI|COPACABANA|COTA|CUCUNUBA|CUCUTA|DOSQUEBRADAS|DUITAMA|ENVIGADO|ESPINAL|FACATATIVA|FLANDES|FLORENCIA|FLORIDA|FLORIDABLANCA|FUNDACION|FUNZA|FUSAGASUGA|GALAPA|GARZON|GIRARDOT|GIRARDOTA|GIRON|GRANADA|GUARNE|GUAYMARAL|IBAGUE|IPIALES|ITAGUI|JAMUNDI|LA CALERA|LA CEJA|LA DORADA|LA ESTRELLA|LA MESA|LA PINTADA|LA VEGA|LEBRIJA|MADRID|MALAMBO|MANIZALES|MANZANARES|MARINILLA|MARIQUITA|MARSELLA|MEDELLIN|MELGAR|MONTELIBANO|MONTENEGRO|MONTERIA|MONTERREY|MOSQUERA|NEIRA|NEIVA|OCANA|PAIPA|PALMIRA|PALONEGRO|PAMPLONA|PASTO|PEREIRA|PIEDECUESTA|PITALITO|PLANETA RICA|POPAYAN|PUERTO COLOMBIA|PUERTO GAITAN|PUERTO LOPEZ|QUIMBAYA|RIOHACHA|RIONEGRO|RIOSUCIO|RISARALDA|SABANALARGA|SABANETA|SALGAR|SAN GIL|SANTA BARBARA|SANTA MARIA|SANTA MARTA|SANTA ROSA DE CABAL|SANTANDER DE QUILICHAO|SIBATE|SINCELEJO|SOACHA|SOGAMOSO|SOLEDAD|SOPO|TENJO|TOCANCIPA|TULUÁ|TUNJA|TURBACO|TURBO|UBATE|URABA|VALLEDUPAR|VILLA DE LEYVA|VILLA DEL ROSARIO|VILLA MARIA|VILLAVICENCIO|VILLETA|YARUMAL|YUMBO|ZARAGOZA|ZIPAQUIRA)\s+', '', s, flags=re.IGNORECASE).strip()
+        # Eliminar adicionales como LOCAL, MUELLE, PISO, BODEGA, HANGAR, etc.
+        s_aeropuerto = re.sub(r'\b(LOCAL|LOCALES|L\d+|MUELLE|PISO|PISOS|P\d+|BODEGA|BODEGAS|BOD|HANGAR|OFICINA|OF|ZONA|SALA|PUERTA|GATE|TERMINAL|MODULO|MOD)\b.*$', '', s_aeropuerto, flags=re.IGNORECASE).strip()
+        # Compactar espacios
+        s_aeropuerto = re.sub(r'\s+', ' ', s_aeropuerto).strip()
+        if s_aeropuerto:
+            return s_aeropuerto
+    
+    # ===== MANEJO ESPECIAL PARA VIA =====
+    # Si la dirección contiene VIA (carreteras, rutas), mantener pero limpiar
+    if re.search(r'\bVIA\b', s, re.IGNORECASE):
+        # Eliminar ciudades al inicio
+        s_via = re.sub(r'^(ACACIAS|AGUACHICA|AGUAZUL|ANAPOIMA|ANSERMA|APARTADO|ARMENIA|BARANOA|BARBOSA|BARRANCABERMEJA|BARRANQUILLA|BELEN DE UMBRIA|BELLO|BOGOTA|BOLIVAR|BRICENO|BUCARAMANGA|BUENAVENTURA|BUGA|CAJICA|CALARCA|CALDAS|CALI|CAMPOALEGRE|CARTAGENA|CARTAGO|CAUCASIA|CERETE|CHAPARRAL|CHIA|CHINCHINA|CHIQUINQUIRA|CIENAGA|CODAZZI|COPACABANA|COTA|CUCUNUBA|CUCUTA|DOSQUEBRADAS|DUITAMA|ENVIGADO|ESPINAL|FACATATIVA|FLANDES|FLORENCIA|FLORIDA|FLORIDABLANCA|FUNDACION|FUNZA|FUSAGASUGA|GALAPA|GARZON|GIRARDOT|GIRARDOTA|GIRON|GRANADA|GUARNE|GUAYMARAL|IBAGUE|IPIALES|ITAGUI|JAMUNDI|LA CALERA|LA CEJA|LA DORADA|LA ESTRELLA|LA MESA|LA PINTADA|LA VEGA|LEBRIJA|MADRID|MALAMBO|MANIZALES|MANZANARES|MARINILLA|MARIQUITA|MARSELLA|MEDELLIN|MELGAR|MONTELIBANO|MONTENEGRO|MONTERIA|MONTERREY|MOSQUERA|NEIRA|NEIVA|OCANA|PAIPA|PALMIRA|PALONEGRO|PAMPLONA|PASTO|PEREIRA|PIEDECUESTA|PITALITO|PLANETA RICA|POPAYAN|PUERTO COLOMBIA|PUERTO GAITAN|PUERTO LOPEZ|QUIMBAYA|RIOHACHA|RIONEGRO|RIOSUCIO|RISARALDA|SABANALARGA|SABANETA|SALGAR|SAN GIL|SANTA BARBARA|SANTA MARIA|SANTA MARTA|SANTA ROSA DE CABAL|SANTANDER DE QUILICHAO|SIBATE|SINCELEJO|SOACHA|SOGAMOSO|SOLEDAD|SOPO|TENJO|TOCANCIPA|TULUÁ|TUNJA|TURBACO|TURBO|UBATE|URABA|VALLEDUPAR|VILLA DE LEYVA|VILLA DEL ROSARIO|VILLA MARIA|VILLAVICENCIO|VILLETA|YARUMAL|YUMBO|ZARAGOZA|ZIPAQUIRA)\s+', '', s, flags=re.IGNORECASE).strip()
+        # Eliminar adicionales como LOCAL, MUELLE, PISO, BODEGA, etc. y todo lo que viene después
+        s_via = re.sub(r'\b(LOCAL|LOCALES|L\d+|MUELLE|PISO|PISOS|P\d+|BODEGA|BODEGAS|BOD|HANGAR|OFICINA|OF|ZONA|SALA|PUERTA|GATE|TERMINAL|MODULO|MOD|LOTE|SECTOR|COORDENADAS|UBICADO|UBICADA)\b.*$', '', s_via, flags=re.IGNORECASE).strip()
+        # Compactar espacios
+        s_via = re.sub(r'\s+', ' ', s_via).strip()
+        if s_via and len(s_via) > 3:  # Evitar retornar solo "VIA"
+            return s_via
     
     # ===== MANEJO ESPECIAL PARA AUTOPISTAS =====
     # Detectar si comienza con AUT, AUTO, AUT., AUTOMÁTICO, etc.
     # Manejo especial para variantes: AUTO (con espacio), AUTOXXXXXX (pegado), AUTONORTE, etc.
     
     # Primero eliminar ciudades al inicio si van seguidas de autopista
-    s = re.sub(r'^(BOGOTA|CALI|MEDELLIN|BARRANQUILLA|CHIA|FUNZA|COTA|RIONEGRO|BUCARAMANGA|SOLEDAD)\s+(?=(?:AUTOPISTA|AUT\.?|AUTO(?:P|PISTA)?|AUTO[A-Z]+|AUT[A-Z]+))', '', s, flags=re.IGNORECASE).strip()
+    s = re.sub(r'^(ACACIAS|AGUACHICA|AGUAZUL|ANAPOIMA|ANSERMA|APARTADO|ARMENIA|BARANOA|BARBOSA|BARRANCABERMEJA|BARRANQUILLA|BELEN DE UMBRIA|BELLO|BOGOTA|BOLIVAR|BRICENO|BUCARAMANGA|BUENAVENTURA|BUGA|CAJICA|CALARCA|CALDAS|CALI|CAMPOALEGRE|CARTAGENA|CARTAGO|CAUCASIA|CERETE|CHAPARRAL|CHIA|CHINCHINA|CHIQUINQUIRA|CIENAGA|CODAZZI|COPACABANA|COTA|CUCUNUBA|CUCUTA|DOSQUEBRADAS|DUITAMA|ENVIGADO|ESPINAL|FACATATIVA|FLANDES|FLORENCIA|FLORIDA|FLORIDABLANCA|FUNDACION|FUNZA|FUSAGASUGA|GALAPA|GARZON|GIRARDOT|GIRARDOTA|GIRON|GRANADA|GUARNE|GUAYMARAL|IBAGUE|IPIALES|ITAGUI|JAMUNDI|LA CALERA|LA CEJA|LA DORADA|LA ESTRELLA|LA MESA|LA PINTADA|LA VEGA|LEBRIJA|MADRID|MALAMBO|MANIZALES|MANZANARES|MARINILLA|MARIQUITA|MARSELLA|MEDELLIN|MELGAR|MONTELIBANO|MONTENEGRO|MONTERIA|MONTERREY|MOSQUERA|NEIRA|NEIVA|OCANA|PAIPA|PALMIRA|PALONEGRO|PAMPLONA|PASTO|PEREIRA|PIEDECUESTA|PITALITO|PLANETA RICA|POPAYAN|PUERTO COLOMBIA|PUERTO GAITAN|PUERTO LOPEZ|QUIMBAYA|RIOHACHA|RIONEGRO|RIOSUCIO|RISARALDA|SABANALARGA|SABANETA|SALGAR|SAN GIL|SANTA BARBARA|SANTA MARIA|SANTA MARTA|SANTA ROSA DE CABAL|SANTANDER DE QUILICHAO|SIBATE|SINCELEJO|SOACHA|SOGAMOSO|SOLEDAD|SOPO|TENJO|TOCANCIPA|TULUÁ|TUNJA|TURBACO|TURBO|UBATE|URABA|VALLEDUPAR|VILLA DE LEYVA|VILLA DEL ROSARIO|VILLA MARIA|VILLAVICENCIO|VILLETA|YARUMAL|YUMBO|ZARAGOZA|ZIPAQUIRA)\s+(?=(?:AUTOPISTA|AUT\.?|AUTO(?:P|PISTA)?|AUTO[A-Z]+|AUT[A-Z]+))', '', s, flags=re.IGNORECASE).strip()
     
     # Luego limpiar errores de escritura: AUTO PISTA -> AUTO, AUTOP -> AUTO
     s = re.sub(r'\bAUTO\s+PISTA\b', 'AUTO', s, flags=re.IGNORECASE)
     s = re.sub(r'\bAUTOP\b', 'AUTO', s, flags=re.IGNORECASE)
+    
+    # Eliminar N cuando significa NUMERO (está entre números)
+    # Ejemplo: "AK 72 N 80 94" -> "AK 72 80 94"
+    # Solo eliminar N, S, E, O solos (no NORTE, NOR, NORT, SUR, ESTE, OESTE)
+    s = re.sub(r'\b([0-9]+)\s+([NSEO])\s+([0-9]+)', r'\1 \3', s)
     
     # Detectar si es una autopista (AUT, AUTO, AUTOPISTA)
     aut_check = re.match(r'^(?:AUTOPISTA|AUT\.?|AUTO(?:PISTA)?\.?|AUTO[A-Z]+|AUT[A-Z]+)', s, re.IGNORECASE)
@@ -135,7 +176,7 @@ def standardize_address(address: str) -> str:
                 
                 # Buscar tipo de vía en lo que sigue después del KM
                 if resto_km:
-                    via_pattern = re.compile(r'\b(CALLE|CLL|CL|CALL|CARRERA|CRA|KRA|KR|AK|K|AVENIDA|AV|AVD|AVDA|AVE|DIAGONAL|DG|DIAG|TRANSVERSAL|TV|TRANSV|TR|AC|ACL|ACR|PASAJE|PAS|PASEO|VEREDA|VDA|VIA)\b', re.IGNORECASE)
+                    via_pattern = re.compile(r'\b(CALLE|CLL|CL|CALL|CARRERA|CRA|KRA|KR|AK|K|AVENIDA|AV|AVD|AVDA|AVE|DIAGONAL|DG|DIAG|TRANSVERSAL|TRAVERSAL|TRANVERSAL|TRANSVERSA|TRANSVERAL|TRANSVESAL|TV|TRANSV|TR|AC|ACL|ACR|PASAJE|PAS|PASEO|VEREDA|VDA|VIA)\b', re.IGNORECASE)
                     via_match = via_pattern.search(resto_km)
                     
                     if via_match:
@@ -164,7 +205,7 @@ def standardize_address(address: str) -> str:
                 
                 # Buscar patrón: [TIPO] [num] [num] o directamente números
                 if resto_limpio:
-                    via_pattern = re.compile(r'\b(CALLE|CLL|CL|CALL|CARRERA|CRA|KRA|KR|AK|K|AVENIDA|AV|AVD|AVDA|AVE|DIAGONAL|DG|DIAG|TRANSVERSAL|TV|TRANSV|TR|AC|ACL|ACR|PASAJE|PAS|PASEO)\s+([A-Z0-9]+)\s+([A-Z0-9]+)', re.IGNORECASE)
+                    via_pattern = re.compile(r'\b(CALLE|CLL|CL|CALL|CARRERA|CRA|KRA|KR|AK|K|AVENIDA|AV|AVD|AVDA|AVE|DIAGONAL|DG|DIAG|TRANSVERSAL|TRAVERSAL|TRANVERSAL|TRANSVERSA|TRANSVERAL|TRANSVESAL|TV|TRANSV|TR|AC|ACL|ACR|PASAJE|PAS|PASEO)\s+([A-Z0-9]+)\s+([A-Z0-9]+)', re.IGNORECASE)
                     via_match = via_pattern.search(resto_limpio)
                     
                     if via_match:
@@ -194,7 +235,7 @@ def standardize_address(address: str) -> str:
         resto_despues_km = km_match.group(3).strip()
         
         # Buscar el tipo de vía después del KM
-        via_pattern = re.compile(r'\b(CALLE|CLL|CL|CALL|CARRERA|CRA|KRA|KR|AK|K|AVENIDA|AV|AVD|AVDA|AVE|DIAGONAL|DG|DIAG|TRANSVERSAL|TV|TRANSV|TR|AC|ACL|ACR|PASAJE|PAS|PASEO|VEREDA|VDA|VIA)\s+(.+)', re.IGNORECASE)
+        via_pattern = re.compile(r'\b(CALLE|CLL|CL|CALL|CARRERA|CRA|KRA|KR|AK|K|AVENIDA|AV|AVD|AVDA|AVE|DIAGONAL|DG|DIAG|TRANSVERSAL|TRAVERSAL|TRANVERSAL|TRANSVERSA|TRANSVERAL|TRANSVESAL|TV|TRANSV|TR|AC|ACL|ACR|PASAJE|PAS|PASEO|VEREDA|VDA|VIA)\s+(.+)', re.IGNORECASE)
         via_match = via_pattern.search(resto_despues_km)
         
         if via_match:
@@ -205,8 +246,38 @@ def standardize_address(address: str) -> str:
             # Solo KM + número, sin tipo de vía claro
             return f"KM {km_num}"
     
+    # ===== NORMALIZACIÓN PREVIA DE PATRONES COMPLEJOS =====
+    
+    # Eliminar teléfonos (secuencias de 7+ dígitos)
+    s = re.sub(r'\b\d{7,}\b', ' ', s)
+    
+    # Eliminar números muy largos que no son direcciones (más de 6 dígitos consecutivos)
+    s = re.sub(r'\b\d{7,}\b', ' ', s)
+    
+    # Separar tipos de vía pegados: AVCL -> AV CL, AKCL -> AK CL, CRCL -> CR CL
+    s = re.sub(r'\b(AV|AK|CR|CL|KR|TV|DG)(CL|CR|KR|AV|AK)\b', r'\1 \2', s, flags=re.IGNORECASE)
+    
+    # Separar letras pegadas a números en direcciones: CR77MSUR -> CR 77M SUR
+    s = re.sub(r'(CR|CL|AV|KR|AK|TV|DG)(\d)', r'\1 \2', s, flags=re.IGNORECASE)
+    
+    # Separar números con letras pegadas: 5B3 -> 5B 3, 15A61 -> 15A 61
+    s = re.sub(r'(\d+[A-Z])(\d)', r'\1 \2', s)
+    
+    # Separar direcciones con letra+SUR/NORTE pegado: 77MSUR -> 77M SUR, 32BNORTE -> 32B NORTE
+    s = re.sub(r'(\d+[A-Z]?)(SUR|NORTE|ESTE|OESTE)', r'\1 \2', s, flags=re.IGNORECASE)
+    
+    # Normalizar "B SUR" a "BIS SUR" para consistencia
+    s = re.sub(r'\b(\d+[A-Z]?)\s+B\s+(SUR|NORTE|ESTE|OESTE)\b', r'\1 BIS \2', s, flags=re.IGNORECASE)
+    
     # Reemplazar símbolos comunes por espacios
     s = re.sub(r'[#\-,;.()]+', ' ', s)
+    
+    # Eliminar tipos de vía duplicados: mantener solo el que está antes de números
+    # Si hay "CALLE AVENIDA 3", queremos mantener el tipo que precede al número
+    # Patrón: TIPO_VIA TIPO_VIA NUMERO -> TIPO_VIA NUMERO (eliminar el tipo intermedio)
+    via_types_pattern = r'\b(CALLE|CLL|CL|CALL|CARRERA|CRA|KRA|KR|AK|K|AVENIDA|AV|AVD|AVDA|AVE|DIAGONAL|DG|DIAG|TRANSVERSAL|TV|TRANSV|TR)\s+(CALLE|CLL|CL|CALL|CARRERA|CRA|KRA|KR|AK|K|AVENIDA|AV|AVD|AVDA|AVE|DIAGONAL|DG|DIAG|TRANSVERSAL|TV|TRANSV|TR)\s+(\d)'
+    # Mantener primer tipo y el número
+    s = re.sub(via_types_pattern, r'\1 \3', s, flags=re.IGNORECASE)
     
     # Eliminar números que parecen coordenadas GPS (muchos decimales)
     s = re.sub(r'\b\d+\.\d{5,}\b', ' ', s)
@@ -214,12 +285,12 @@ def standardize_address(address: str) -> str:
     # Reemplazar variaciones de "No." o "Nº"
     s = re.sub(r'\b(N[OÓº°]|NO|NR|NUM)\b', ' ', s, flags=re.IGNORECASE)
     
-    # Eliminar palabras descriptivas - ACTUALIZADO CON NUEVAS VARIACIONES
-    descriptivos = r'\b(LOCAL|LOCALES|L\d+|CENTRO|COMERCIAL|COMERCIAR|PISO|APTO|APT|APARTAMENTO|OFICINA|OF|OFC|OFI|INTERIOR|INT|BODEGA|BOD|BODEGAS|CASA|EDIFICIO|ED|ATRIO|TORRE|TO|BLOQUE|BL|BLQ|MZ|MANZANA|BARRIO|CONJUNTO|CONJ|ETAPA|PARQUE|TERMINAL|PUENTE|AEREO|SUR|NORTE|ESTE|OESTE|COSTADO|FRENTE|ESQUINA|ESQ|LAS|LOS|LA|LD|LOTE|LOTES|FASE|MODULO|MOD|SUBLOTE|SECTOR|SECT|KM|KILOMETRO|KILOMETROS|DEL|DE|EN|BODEGAS|ARTURO|CUMPLIDO|TOLU|PARCELAS|COTA|ES|DIRECCION|A|MTS|ADELANTE|PEAJE|PUERTAS|DON|DIEGO|LLANOGRANDE|ACOPI|ACACIAS|RANSA|COLFRIGOS|SUBA|CALI|MIECO|ERNESTO|CORTIZZOS|CAMILA|DAZA|ADMINISTRATIVO|ACTUAL|AENIDA|NRO|TRADE|PARK|SIBERIA|VIAL|BRICENO|PALERMO|ANILLO|VEREDA|VDA|GIRON|VIA|AUTOPISTA|LC|LOC|DG|BA|CD|PI|PZ|BIS|BD|AL|TRV|BOG|PS|LT|LO|IN|AP|CON|AN|BDG|PAGINA|LINCA|NIVEL)\b'
+    # Eliminar palabras descriptivas - ACTUALIZADO: Mantener NORTE/SUR/ESTE/OESTE si están entre números
+    descriptivos = r'\b(LOCAL|LOCALES|L\d+|CENTRO|COMERCIAL|COMERCIAR|PISO|PISOS|APTO|APT|APARTAMENTO|OFICINA|OF|OFC|OFI|INTERIOR|INT|BODEGA|BOD|BODEGAS|CASA|EDIFICIO|ED|ATRIO|TORRE|TO|BLOQUE|BL|BLQ|MZ|MANZANA|BARRIO|CONJUNTO|CONJ|ETAPA|PARQUE|TERMINAL|PUENTE|AEREO|COSTADO|FRENTE|ESQUINA|ESQ|LAS|LOS|LA|LD|LOTE|LOTES|FASE|MODULO|MOD|SUBLOTE|SECTOR|SECT|SECCION|KM|KILOMETRO|KILOMETROS|DEL|DE|EN|BODEGAS|ARTURO|CUMPLIDO|TOLU|PARCELAS|COTA|ES|DIRECCION|DIR|A|MTS|METROS|ADELANTE|PEAJE|PUERTAS|DON|DIEGO|LLANOGRANDE|ACACIAS|RANSA|COLFRIGOS|SUBA|CALI|MIECO|ERNESTO|CORTIZZOS|CAMILA|DAZA|ADMINISTRATIVO|NRO|TRADE|PARK|SIBERIA|VIAL|BRICENO|PALERMO|ANILLO|VEREDA|VDA|GIRON|VIA|AUTOPISTA|LC|LOC|LI|DG|BA|CD|PI|PZ|BIS|BD|AL|TRV|BOG|PS|LT|LO|IN|AP|CON|AN|BDG|PAGINA|LINCA|NIVEL|ACOPI|ACTUAL|SOLEDAD|AGOSTO|POR|ENTRE|EDIF|ANTIOQUIA|ATLANTICO|DORADO|BOYACA|AMERICAS|BOLIVAR|MULTIPLAZA|ROSITA|BURBUJA|TAQUILLA|SEDE|ADM|ADMINISTRACION|FINCA|ZONA|FRANCA|COMPLEJO|INDUSTRIAL|LOGISTICO|PARQUEADERO|ENTRADA)\b'
     s = re.sub(descriptivos, ' ', s, flags=re.IGNORECASE)
     
-    # Eliminar ciudades/lugares
-    ciudades = r'\b(BOGOTA|CALI|MEDELLIN|BARRANQUILLA|CARTAGENA|SIN CIUDAD|SINCELEJO|YUMBO|CHIA|FUNZA|COTA|IBAGUE|PEREIRA|MANIZALES|BUCARAMANGA|SANTA MARTA|VALLEDUPAR|RIONEGRO|CAJICA|MADRID|FACATATIVA|SOACHA|VILLAVICENCIO|DUITAMA|SOGAMOSO|TUNJA|GIRARDOTA|SABANETA|ENVIGADO|SONSON|RIOHACHA|GALAP|ZOFIA|FRANCA|CIUDAD|CART|MERCADO|ZONA|AERO|COMPLEJO|INDUSTRIAL|COMERCIAL|CIC|JARDIN|SOTANO|BUENAVISTA|AEROPUERTO|AEREOPUERTO|AEREROPUERTO|AEROPUERTI|CARGO)\b'
+    # Eliminar ciudades/lugares y departamentos
+    ciudades = r'\b(ACACIAS|AGUACHICA|AGUAZUL|ANAPOIMA|ANSERMA|APARTADO|ARMENIA|BARANOA|BARBOSA|BARRANCABERMEJA|BARRANQUILLA|BELEN DE UMBRIA|BELLO|BOGOTA|BOLIVAR|BRICENO|BUCARAMANGA|BUENAVENTURA|BUGA|CAJICA|CALARCA|CALDAS|CALI|CAMPOALEGRE|CARTAGENA|CARTAGO|CAUCASIA|CERETE|CHAPARRAL|CHIA|CHINCHINA|CHIQUINQUIRA|CIENAGA|CODAZZI|COPACABANA|COTA|CUCUNUBA|CUCUTA|DOSQUEBRADAS|DUITAMA|ENVIGADO|ESPINAL|FACATATIVA|FLANDES|FLORENCIA|FLORIDA|FLORIDABLANCA|FUNDACION|FUNZA|FUSAGASUGA|GALAPA|GARZON|GIRARDOT|GIRARDOTA|GIRON|GRANADA|GUARNE|GUAYMARAL|IBAGUE|IPIALES|ITAGUI|JAMUNDI|LA CALERA|LA CEJA|LA DORADA|LA ESTRELLA|LA MESA|LA PINTADA|LA VEGA|LEBRIJA|MADRID|MALAMBO|MANIZALES|MANIZALEZ|MANZANARES|MARINILLA|MARIQUITA|MARSELLA|MEDELLIN|MELGAR|MONTELIBANO|MONTENEGRO|MONTERIA|MONTERREY|MOSQUERA|NEIRA|NEIVA|OCANA|PAIPA|PALMIRA|PALONEGRO|PAMPLONA|PASTO|PEREIRA|PIEDECUESTA|PITALITO|PLANETA RICA|POPAYAN|PUERTO COLOMBIA|PUERTO GAITAN|PUERTO LOPEZ|QUIMBAYA|RIOHACHA|RIONEGRO|RIOSUCIO|RISARALDA|SABANALARGA|SABANETA|SALGAR|SAN GIL|SANTA BARBARA|SANTA MARIA|SANTA MARTA|SANTA ROSA DE CABAL|SANTANDER DE QUILICHAO|SIBATE|SINCELEJO|SOACHA|SOGAMOSO|SOLEDAD|SOPO|TENJO|TOCANCIPA|TULUÁ|TUNJA|TURBACO|TURBO|UBATE|URABA|VALLEDUPAR|VILLA DE LEYVA|VILLA DEL ROSARIO|VILLA MARIA|VILLAVICENCIO|VILLETA|YARUMAL|YOPAL|YUMBO|ZARAGOZA|ZIPAQUIRA|AEROPUERTO|ANTIOQUIA|ATLANTICO|CUNDINAMARCA|VALLE|SANTANDER|CASANARE)\b'
     s = re.sub(ciudades, ' ', s, flags=re.IGNORECASE)
     
     # Compactar espacios
@@ -228,30 +299,76 @@ def standardize_address(address: str) -> str:
     if not s or len(s) < 1:
         return ''
     
+    # PATRÓN ALTERNATIVO: TIPO_VIA + NOMBRE (1-3 palabras) + NUMEROS
+    # Para casos como "AV CIRCUNVALAR 45 23" o "CL LA ROSITA 12 34"
+    pattern_con_nombre = r'\b(CALLE|CLL|CL|CALL|CARRERA|CRA|KRA|KR|AK|K|AVENIDA|AENIDA|AV|AVD|AVDA|AVE|DIAGONAL|DG|DIAG|TRANSVERSAL|TV|TRANSV|TR)\s+(?:[A-Z]+\s+){1,3}?(\d+[A-Z]?)\s+(\d+[A-Z]?)(?:\s+(\d+[A-Z]?))?'
+    match_nombre = re.search(pattern_con_nombre, s, re.IGNORECASE)
+    
+    if match_nombre:
+        via_type = normalize_via_type(match_nombre.group(1))
+        num1 = match_nombre.group(2)
+        num2 = match_nombre.group(3)
+        num3 = match_nombre.group(4) if match_nombre.group(4) else ''
+        
+        if num3:
+            return f"{via_type} {num1} {num2} {num3}"
+        else:
+            return f"{via_type} {num1} {num2}"
+    
     # PATRÓN 1: Buscar TIPO_VIA explícito + NUMEROS (flexible con espacios)
     # Permite múltiples espacios y captura hasta 4 componentes numéricos
-    pattern_con_tipo = r'\b(CALLE|CLL|CL|CALL|CARRERA|CRA|KRA|KR|AK|K|AVENIDA|AV|AVD|AVDA|AVE|DIAGONAL|DG|DIAG|TRANSVERSAL|TV|TRANSV|TR|AC|ACL|ACR|CIRCULAR|CIRC|PASAJE|PAS|PASEO|PEATONAL|PTE|PERIF|CTRA|VEREDA|VDA|VIA)\s+([A-Z0-9]+)\s+([A-Z0-9]+)(?:\s+([A-Z0-9]+))?(?:\s+([A-Z0-9]+))?'
+    # Ahora captura también direcciones cardinales (NORTE, SUR, ESTE, OESTE) que van después del número
+    # Solo captura cardinales con al menos 3 letras (NOR, NORT, NORTE, etc.), no N/S/E/O solos
+    # Permite direcciones con 1, 2 o 3 números
+    pattern_con_tipo = r'\b(CALLE|CLL|CL|CALL|CARRERA|CRA|KRA|KR|AK|K|AVENIDA|AENIDA|AV|AVD|AVDA|AVE|DIAGONAL|DG|DIAG|TRANSVERSAL|TRAVERSAL|TRANVERSAL|TRANSVERSA|TRANSVERAL|TRANSVESAL|TV|TRANSV|TR|AC|ACL|ACR|CIRCULAR|CIRC|PASAJE|PAS|PASEO|PEATONAL|PTE|PERIF|CTRA|VEREDA|VDA|VIA)\s+([A-Z0-9]+)(?:\s+(NORTE|NOR|NORT|SUR|ESTE|OESTE|OCCIDENTE|OCC))?(?:\s+([A-Z0-9]+))?(?:\s+([A-Z0-9]+))?(?:\s+([A-Z0-9]+))?'
     
     match = re.search(pattern_con_tipo, s, re.IGNORECASE)
     
     if match:
         via_type = normalize_via_type(match.group(1))
         num1 = match.group(2)
-        num2 = match.group(3)
-        num3 = match.group(4) if match.group(4) else ''
-        num4 = match.group(5) if match.group(5) else ''
+        direccion_cardinal = match.group(3).upper() if match.group(3) else None
+        num2 = match.group(4) if match.group(4) else ''
+        num3 = match.group(5) if match.group(5) else ''
+        num4 = match.group(6) if match.group(6) else ''
         
-        # VALIDACIÓN: Verificar que al menos uno de los componentes sea principalmente numérico
+        # VALIDACIÓN: Verificar que al menos el primer componente sea principalmente numérico
         # Esto evita procesar "VEREDA EL PALMAR" como si fuera una dirección válida
-        has_numbers = (re.match(r'\d', num1) or re.match(r'\d', num2) or 
-                      (num3 and re.match(r'\d', num3)))
+        has_numbers = re.match(r'\d', num1)
         
         if has_numbers:
-            # Retornar máximo 3 componentes (tipo + 2 ó 3 números)
-            if num3:
-                return f"{via_type} {num1} {num2} {num3}"
+            # Construir resultado con dirección cardinal si existe
+            if direccion_cardinal:
+                # Normalizar dirección cardinal a su forma completa
+                if direccion_cardinal in ['NOR', 'NORT', 'NORTE']:
+                    direccion_cardinal = 'NORTE'
+                elif direccion_cardinal in ['SUR']:
+                    direccion_cardinal = 'SUR'
+                elif direccion_cardinal in ['ESTE']:
+                    direccion_cardinal = 'ESTE'
+                elif direccion_cardinal in ['OESTE', 'OCCIDENTE', 'OCC']:
+                    direccion_cardinal = 'OESTE'
+                
+                # Retornar con dirección cardinal
+                if num2 and num3 and num4:
+                    return f"{via_type} {num1} {direccion_cardinal} {num2} {num3} {num4}"
+                elif num2 and num3:
+                    return f"{via_type} {num1} {direccion_cardinal} {num2} {num3}"
+                elif num2:
+                    return f"{via_type} {num1} {direccion_cardinal} {num2}"
+                else:
+                    return f"{via_type} {num1} {direccion_cardinal}"
             else:
-                return f"{via_type} {num1} {num2}"
+                # Retornar con los números disponibles
+                if num2 and num3 and num4:
+                    return f"{via_type} {num1} {num2} {num3} {num4}"
+                elif num2 and num3:
+                    return f"{via_type} {num1} {num2} {num3}"
+                elif num2:
+                    return f"{via_type} {num1} {num2}"
+                else:
+                    # Solo un número - válido para algunas direcciones
+                    return f"{via_type} {num1}"
     
     # PATRÓN 2: Si no encuentra tipo explícito, busca al menos 2 bloques numéricos
     # pero SOLO si parecen direcciones, no coordenadas
