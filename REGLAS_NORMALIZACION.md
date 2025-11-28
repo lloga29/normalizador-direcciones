@@ -666,3 +666,10 @@ Salida:  AUTOPISTA NORTE 145 23
 **Versión del documento**: 1.0  
 **Última actualización**: Diciembre 2024  
 **Tasa de éxito actual**: 81.3%
+
+## Actualizacion 2025-11
+- Refactor del pipeline: etapas separadas (prelimpia, handlers especiales, limpieza general, patrones) y regex compiladas reutilizables.
+- Nuevos tipos: variantes CIRCULAR/CIRCUNVALAR normalizan a CIRC; se reconoce BIS como cardinal en patrones principales.
+- Handler de AUTOPISTA detecta AUTO/AUT/AUTOPISTA en cualquier posicion, conserva KM y procesa el tramo restante con el parser general.
+- Limpieza elimina NO/NR/NUM antes de parsear, reduciendo falsos negativos; se preservan nombres de calle en la salida (ej.: AV CIRCUNVALAR 45 23).
+- La columna "Direccion Estandarizada" se sobrescribe con aviso en consola; considera hacer copia si necesitas conservar valores previos.
